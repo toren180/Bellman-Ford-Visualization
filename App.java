@@ -53,10 +53,9 @@ public class App
     }
 
     //Returns shortest path from src node to every other node in the graph. If there is a negative cycle returns {-1}
-    //Warning: changing src will mess it up, I had to modify it for the visualization and that involved setting a single node as src, sorry
     public static int[] bellmanFord(adjacencyList adjList, int src, GraphVisualizer graphVisualizer) throws InterruptedException
     {
-        GraphVisualizer.pause(1000);
+        GraphVisualizer.pause(500);
         graphVisualizer.updateNodeDistance("S", 0);
 
         int[] shortestPath = new int[adjList.getSize()]; //stores shortest path to every vertex from src
@@ -89,7 +88,7 @@ public class App
                         int currVertex = currEdge.vertex; //currentAdjacentVertex
                         currDist += currEdge.weight; //currDist = distance it takes to reach currentAdjacent vertex through this path. 
                         graphVisualizer.highlightEdge(adjList.keyMap.get(index), adjList.keyMap.get(currVertex), Color.RED); //turns edge red when it is checked
-                        GraphVisualizer.pause(2000);
+                        GraphVisualizer.pause(1000);
 
                         if (currDist < shortestPath[currVertex]) //If the distance of the current path to the vertex is shorter than the current known shortest distance 
                         {
@@ -98,7 +97,7 @@ public class App
                             //Visual stuff
                             graphVisualizer.updateNodeDistance(adjList.keyMap.get(currVertex), shortestPath[currVertex]);
                             graphVisualizer.highlightEdge(adjList.keyMap.get(index), adjList.keyMap.get(currVertex), Color.GREEN);
-                            GraphVisualizer.pause(2000);
+                            GraphVisualizer.pause(1000);
                             
                             notComplete = true; //Confirms that there is still shorter paths to be found, keeps while loop running
                         }

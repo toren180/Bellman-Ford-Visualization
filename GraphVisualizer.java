@@ -13,16 +13,6 @@ import java.util.Map;
 
 import javax.swing.JPanel;
 
-/* 
-ChatGPT helped me understand the general structure of JSwing gave me the 
-general structure for the GraphVisualizer class. However I still had to spend a couple hours debugging and 
-writing some of my own functions. The code it originally wrote produced a graph that had a lot of issues. 
-I have a decent understanding of JSwing now and I can explain any of the
-functions below on my own without help from GPT. The main methods GPT helped me with were paintComponent() 
-and drawArrow(). 
-I did not get help from chatGPT for any other code in the 
-*/
-
 public class GraphVisualizer extends JPanel 
 {
 
@@ -52,8 +42,6 @@ public class GraphVisualizer extends JPanel
         nodeDistances.put("E",Integer.MAX_VALUE);
 
     }
-
-    //Made with help from GPT
 
     @Override
     protected void paintComponent(Graphics g) 
@@ -140,8 +128,6 @@ public class GraphVisualizer extends JPanel
         }
     }
 
-
-    //Made with help from GPT
 
     private void drawArrow(Graphics2D g2, String from, String to, int weight) 
     {
