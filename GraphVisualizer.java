@@ -10,22 +10,31 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.swing.JPanel;
 
+/**
+ * The GraphVisualizer class is a JPanel that handles the graphical representation of the graph.
+ * It uses JSwing to draw nodes, edges, and update the display based on the algorithm's state.
+ */
 public class GraphVisualizer extends JPanel 
 {
 
-    // Node positions (for layout)
+    // A map to store the (x, y) coordinates for each node to control the layout.
     private final Map<String, Point> nodePositions = new HashMap<>();
+    // A map to store the color of each edge, used for highlighting.
     private final Map<String, Color> edgeColors = new HashMap<>();
+    // A map to store the current shortest distance to each node.
     private Map<String, Integer> nodeDistances = new HashMap<>();
+    // A counter to track the number of cycles completed by the Bellman-Ford algorithm.
     public int numCycles = 1; 
 
+    /**
+     * Constructs the GraphVisualizer and initializes the node positions and distances.
+     */
     public GraphVisualizer() 
     {
-        // Manually place nodes (x, y) coordinates
         setBackground(Color.WHITE);
+        // Manually place nodes for a clear, readable graph layout.
         nodePositions.put("S", new Point(100, 100));
         nodePositions.put("E", new Point(300, 100));
         nodePositions.put("D", new Point(500, 100));
@@ -33,7 +42,8 @@ public class GraphVisualizer extends JPanel
         nodePositions.put("C", new Point(350, 300));
         nodePositions.put("B", new Point(250, 500));
         
-        //Add in distances for each node to the NodeDistance map
+        // Initialize distances for each node. The source node "S" is 0,
+        // while all other nodes are set to infinity (Integer.MAX_VALUE).
         nodeDistances.put("S",0);
         nodeDistances.put("A",Integer.MAX_VALUE);
         nodeDistances.put("B",Integer.MAX_VALUE);
@@ -43,30 +53,31 @@ public class GraphVisualizer extends JPanel
 
     }
 
+    /**
+     * This method is called by the JSwing framework to render the graph.
+     * It draws the nodes, edges, and text labels.
+     * @param g The Graphics object used for drawing.
+     */
     @Override
     protected void paintComponent(Graphics g) 
     {
-        
         super.paintComponent(g);
-        //System.out.println("Calling paintcomponent");
 
         Graphics2D g2 = (Graphics2D) g;
-        // Set font for the label
-        g2.setFont(new Font("Arial", Font.PLAIN, 18)); // Medium size font
-
-        // Set color for the label
+        
+        // Set font and color for the informational labels at the top of the window.
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
         g2.setColor(Color.BLACK);
 
-        // Draw label at the top-left
+        // Draw labels showing the current cycle number and the traversal order.
         String labelText = "Cycle # " + numCycles;
-        g2.drawString(labelText, 70, 30); // (x=20, y=30)
+        g2.drawString(labelText, 70, 30);
         labelText = "Traversal Order: S > A > B > C > D > E";
         g2.drawString(labelText, 220, 30);
         g2.setStroke(new BasicStroke(2));
         g2.setFont(new Font("Arial", Font.BOLD, 14));
-        //drawSimpleArrow(g2,100, 100, 300, 200);
 
-        // Draw edges (arrows)
+        // Draw all the predefined edges (arrows) for the graph.
         drawArrow(g2, "S", "A", 10);
         drawArrow(g2, "S", "E", 8);
         drawArrow(g2, "A", "C", 2);
@@ -76,34 +87,32 @@ public class GraphVisualizer extends JPanel
         drawArrow(g2, "D", "C", -1);
         drawArrow(g2, "E", "D", 1);
 
-        //drawSimpleArrow(g2, 100,100,150,30);
-
+        // Iterate through each node and draw its circle and label.
         for (String node : nodePositions.keySet()) 
         {
             Point p = nodePositions.get(node);
         
-            // Draw node circle
+            // Draw the node circle (light gray with a black outline).
             Color fillColor = Color.LIGHT_GRAY;
             g2.setColor(fillColor);
             g2.fillOval(p.x - 20, p.y - 20, 40, 40);
             g2.setColor(Color.BLACK);
             g2.drawOval(p.x - 20, p.y - 20, 40, 40);
         
-            // Prepare node label text
+            // Prepare the label text, including the current shortest distance.
             String label = node;
             if (nodeDistances.containsKey(node)) 
             {
                 int distance = nodeDistances.get(node);
                 if (distance == Integer.MAX_VALUE) 
                 {
-                    //System.out.println("changing to infinity");
                     label += " (∞)";
                 } else {
                     label += " (" + distance + ")";
                 }
             }
         
-            // Calculate label width
+            // Center the label horizontally and position it below the node.
             FontMetrics metrics = g2.getFontMetrics();
             int labelWidth = metrics.stringWidth(label);
             int offset = 0; 
@@ -119,73 +128,76 @@ public class GraphVisualizer extends JPanel
             {
                 offset = -5; 
             }
-            // Center label horizontally, and draw it slightly BELOW the node
-
             int labelX = (p.x - labelWidth / 2) + offset;
-            int labelY = p.y + 45; // 40 pixels below center (circle radius is 20)
+            int labelY = p.y + 45;
             g2.setColor(Color.BLUE);
             g2.drawString(label, labelX, labelY);
         }
     }
 
-
+    /**
+     * Draws an arrow representing a directed edge between two nodes.
+     * It also draws the edge's weight and handles color highlighting.
+     * @param g2 The Graphics2D object for drawing.
+     * @param from The starting node's key.
+     * @param to The ending node's key.
+     * @param weight The weight of the edge.
+     */
     private void drawArrow(Graphics2D g2, String from, String to, int weight) 
     {
-        //System.out.println("DRWAING ARROWS");
-
         // Get coordinates of the source and destination nodes
         Point p1 = nodePositions.get(from);
         Point p2 = nodePositions.get(to);
     
-        // Calculate the angle between the nodes
+        // Calculate the angle between the nodes to correctly orient the arrow.
         double dx = p2.x - p1.x;
         double dy = p2.y - p1.y;
         double angle = Math.atan2(dy, dx);
     
-        // Shorten the start and end to avoid overlapping circles
+        // Shorten the start and end of the line so it doesn't overlap the node circles.
         int shorten = 20;
         int startX = (int) (p1.x + shorten * Math.cos(angle));
         int startY = (int) (p1.y + shorten * Math.sin(angle));
         int endX = (int) (p2.x - shorten * Math.cos(angle));
         int endY = (int) (p2.y - shorten * Math.sin(angle));
     
-        // Draw the line
+        // Get the current color for the edge from the edgeColors map.
         Color color = edgeColors.getOrDefault(from + "->" + to, Color.BLACK);
-        //System.out.println(edgeColors.getOrDefault(from + "->" + to, Color.BLACK));
         g2.setColor(color);
         g2.drawLine(startX, startY, endX, endY);
         int offset = 0;
 
-        //Offset 
+        // Apply a small offset to the weight label for better readability on specific edges.
         if((from.equals("D") && to.equals("C" ))||(from.equals("C") && to.equals("B")))
         {
             offset = -10; 
         }
-        // Draw the weight label near the middle of the line
+        // Draw the weight label near the middle of the line.
         int labelX = ((startX + endX) / 2) + offset;
         int labelY = (startY + endY) / 2 - 10;
         g2.drawString(String.valueOf(weight), labelX, labelY);
 
-        // Define the arrowhead shape
+        // Define the arrowhead shape.
         int arrowSize = 10;
         Polygon arrowHead = new Polygon();
         arrowHead.addPoint(0, 0);
         arrowHead.addPoint(-arrowSize, -arrowSize / 2);
         arrowHead.addPoint(-arrowSize, arrowSize / 2);
     
-        // Create a new graphics context for the arrowhead
+        // Create a new graphics context for the arrowhead to apply rotation and translation.
         Graphics2D g = (Graphics2D) g2.create();
-        //AffineTransform tx = new AffineTransform();
         g2.setColor(color);
     
-        // 💥 Place the arrow at (endX, endY), not the middle!
-        g.translate(endX, endY);    // move to endpoint
-        g.rotate(angle);        // rotate to line's angle
-        g.fill(arrowHead);      // draw the arrowhead
+        // Translate and rotate the graphics context to draw the arrowhead at the correct position and angle.
+        g.translate(endX, endY);
+        g.rotate(angle);
+        g.fill(arrowHead);
         g.dispose();    
     }
 
-    // Turns the entire graph green
+    /**
+     * Highlights all edges in green to indicate the algorithm is complete and the final paths are found.
+     */
     public void complete()
     {
         highlightEdge("S", "A", Color.GREEN);
@@ -198,15 +210,23 @@ public class GraphVisualizer extends JPanel
         highlightEdge("E", "D", Color.GREEN);
     }
 
-    //Turns an edge to a specific color 
+    /**
+     * Changes the color of a specific edge and triggers a repaint to update the display.
+     * @param from The starting node's key.
+     * @param to The ending node's key.
+     * @param color The new color for the edge.
+     */
     public void highlightEdge(String from, String to, Color color) 
     {
         edgeColors.put(from + "->" + to, color);
-        //System.out.println("setting color to green");
         repaint();
     }
 
-    // Pauses graph
+    /**
+     * Pauses the program's execution for a specified number of milliseconds.
+     * This is used to slow down the visualization for better viewing.
+     * @param milliseconds The duration to pause in milliseconds.
+     */
     public static void pause(int milliseconds) 
     {
         try 
@@ -219,7 +239,11 @@ public class GraphVisualizer extends JPanel
         }
     }
 
-    //Updates distance in hashmap when shortestPath array is changed
+    /**
+     * Updates the displayed distance for a specific node and repaints the graph.
+     * @param node The node's key to update.
+     * @param distance The new shortest distance value.
+     */
     public void updateNodeDistance(String node, int distance) 
     {
         nodeDistances.put(node, distance);
